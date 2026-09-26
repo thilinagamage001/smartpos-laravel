@@ -1,0 +1,66 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: smartpos
+      POSTGRES_USER: smartpos
+      POSTGRES_PASSWORD: secret
+    ports: ["5433:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smartpos -d smartpos"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports: ["8005:80"]
+    command: sh -c "php artisan migrate --seed --force && /start.sh"
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_KEY: ${APP_KEY}
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: smartpos
+      DB_USERNAME: smartpos
+      DB_PASSWORD: secret
+      SESSION_DRIVER: database
+      CACHE_STORE: database
+      QUEUE_CONNECTION: database
+    depends_on:
+      db:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: php artisan queue:work --sleep=3 --tries=3 --timeout=90
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_KEY: ${APP_KEY}
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: smartpos
+      DB_USERNAME: smartpos
+      DB_PASSWORD: secret
+      SESSION_DRIVER: database
+      CACHE_STORE: database
+      QUEUE_CONNECTION: database
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
