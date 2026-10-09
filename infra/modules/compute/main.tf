@@ -68,7 +68,7 @@ usermod -aG docker ubuntu
 
 # Clone repository
 rm -rf /home/ubuntu/smartpos
-git clone ${var.git_repo_url} /home/ubuntu/smartpos
+git clone -b ${var.git_branch} ${var.git_repo_url} /home/ubuntu/smartpos
 
 cd /home/ubuntu/smartpos
 
