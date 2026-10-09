@@ -9,7 +9,7 @@ terraform {
   }
 
   backend "s3" {
-    bucket = "smartpos-terraform-state"
+    bucket = "smartpos-tfstate-thilina-2026"
     key    = "smartpos/terraform.tfstate"
     region = "ap-southeast-1"
   }
@@ -31,16 +31,6 @@ module "security" {
   vpc_id  = module.networking.vpc_id
 }
 
-module "compute" {
-  source            = "./modules/compute"
-  project           = var.project
-  subnet_id         = module.networking.public_subnet_id
-  sg_id             = module.security.ec2_sg_id
-  key_name          = var.key_name
-  instance_type     = var.instance_type
-  instance_profile  = module.security.instance_profile_name
-}
-
 module "database" {
   source             = "./modules/database"
   project            = var.project
@@ -49,6 +39,20 @@ module "database" {
   db_username        = var.db_username
   db_password        = var.db_password
   db_instance_class  = var.db_instance_class
+}
+
+module "compute" {
+  source            = "./modules/compute"
+  project           = var.project
+  subnet_id         = module.networking.public_subnet_id
+  sg_id             = module.security.ec2_sg_id
+  key_name          = var.key_name
+  instance_type     = var.instance_type
+  instance_profile  = module.security.instance_profile_name
+  db_host           = module.database.db_endpoint
+  db_username       = var.db_username
+  db_password       = var.db_password
+  git_repo_url      = var.git_repo_url
 }
 
 module "storage" {

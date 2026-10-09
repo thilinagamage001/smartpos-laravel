@@ -1,5 +1,6 @@
 resource "aws_s3_bucket" "uploads" {
-  bucket = "${var.project}-uploads-${var.environment}"
+  bucket_prefix = "${var.project}-uploads-${var.environment}-"
+  force_destroy = true
 
   tags = {
     Name        = "${var.project}-uploads"
@@ -31,6 +32,6 @@ resource "aws_s3_bucket_versioning" "uploads" {
   bucket = aws_s3_bucket.uploads.id
 
   versioning_configuration {
-    status = "Enabled"
+    status = "Suspended"
   }
 }
