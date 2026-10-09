@@ -60,7 +60,15 @@ done
 
 # Install runtime dependencies
 apt-get update -y
-apt-get install -y docker.io docker-compose-plugin git netcat-openbsd curl
+apt-get install -y docker.io git netcat-openbsd curl
+apt-get install -y docker-compose-v2 || true
+
+# Ensure docker compose CLI plugin is ready
+if ! docker compose version >/dev/null 2>&1; then
+  mkdir -p /usr/local/lib/docker/cli-plugins
+  curl -fsSL https://github.com/docker/compose/releases/download/v2.29.7/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose
+  chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+fi
 
 systemctl enable docker
 systemctl start docker
