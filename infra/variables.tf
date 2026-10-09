@@ -22,9 +22,9 @@ variable "key_name" {
 }
 
 variable "instance_type" {
-  description = "EC2 instance type"
+  description = "EC2 instance type (t3.micro is AWS Free Tier eligible - 750 hrs/month)"
   type        = string
-  default     = "t3.small"
+  default     = "t3.micro"
 }
 
 variable "db_username" {
@@ -43,4 +43,10 @@ variable "db_instance_class" {
   description = "RDS instance class"
   type        = string
   default     = "db.t3.micro"
+}
+
+variable "git_repo_url" {
+  description = "Git repository URL for automated deployment"
+  type        = string
+  default     = "https://github.com/thilinagamage001/smartpos-laravel.git"
 }

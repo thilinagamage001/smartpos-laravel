@@ -19,12 +19,34 @@ variable "key_name" {
 }
 
 variable "instance_type" {
-  description = "EC2 instance type"
+  description = "EC2 instance type (t3.micro is AWS Free Tier eligible)"
   type        = string
-  default     = "t3.small"
+  default     = "t3.micro"
 }
 
 variable "instance_profile" {
   description = "IAM instance profile name to attach"
   type        = string
+}
+
+variable "db_host" {
+  description = "RDS PostgreSQL endpoint hostname"
+  type        = string
+}
+
+variable "db_username" {
+  description = "RDS PostgreSQL master username"
+  type        = string
+}
+
+variable "db_password" {
+  description = "RDS PostgreSQL master password"
+  type        = string
+  sensitive   = true
+}
+
+variable "git_repo_url" {
+  description = "Git repository URL to clone on first boot"
+  type        = string
+  default     = "https://github.com/thilinagamage001/smartpos-laravel.git"
 }

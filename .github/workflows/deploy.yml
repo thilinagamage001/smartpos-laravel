@@ -1,0 +1,110 @@
+name: SmartPOS CI/CD — Test, Build & Deploy to AWS EC2
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────
+  # Stage 1: Continuous Integration (Lint, Build Assets & Run Tests)
+  # ─────────────────────────────────────────────────────────────────
+  test:
+    name: CI — Build & PHPUnit Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: smartpos_test
+          POSTGRES_USER: smartpos
+          POSTGRES_PASSWORD: secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U smartpos -d smartpos_test"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: pdo_pgsql, pgsql, gd, zip, bcmath
+          coverage: none
+
+      - name: Install Composer Dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Setup Node.js 22 & Build Vite Assets
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+      - run: |
+          npm ci
+          npm run build
+
+      - name: Prepare Test Environment & Run Migrations
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: smartpos_test
+          DB_USERNAME: smartpos
+          DB_PASSWORD: secret
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          php artisan migrate --force
+          php artisan test
+
+  # ─────────────────────────────────────────────────────────────────
+  # Stage 2: Continuous Deployment to AWS Free Tier EC2 + RDS
+  # ─────────────────────────────────────────────────────────────────
+  deploy:
+    name: CD — Deploy Docker Stack to AWS EC2
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+
+    steps:
+      - name: Configure SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy Containers, Run RDS Migrations & Verify Health
+        run: |
+          ssh ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+            set -e
+            echo "==> Waiting for EC2 cloud-init (Docker installation) if first boot..."
+            while [ ! -f /tmp/user_data_done.txt ]; do sleep 5; done
+
+            cd /home/ubuntu/smartpos
+            echo "==> Pulling latest code from main..."
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "==> Building and starting production Docker containers..."
+            docker compose -f docker-compose.prod.yml up -d --build
+
+            echo "==> Pruning dangling Docker images to keep 20GB Free Tier EBS clean..."
+            docker image prune -f
+
+            echo "==> Verifying application health endpoint (/up)..."
+            sleep 5
+            curl -fsS http://localhost/up > /dev/null && echo "SmartPOS is UP and healthy!"
+          EOF

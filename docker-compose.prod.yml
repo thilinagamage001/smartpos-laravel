@@ -1,0 +1,36 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: smartpos-app:latest
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    env_file:
+      - .env
+    command: >
+      sh -c "php artisan config:cache &&
+             php artisan route:cache &&
+             php artisan view:cache &&
+             php artisan migrate --force &&
+             /start.sh"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  worker:
+    image: smartpos-app:latest
+    restart: unless-stopped
+    env_file:
+      - .env
+    command: php artisan queue:work --sleep=3 --tries=3 --timeout=90 --memory=64
+    depends_on:
+      - app
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
