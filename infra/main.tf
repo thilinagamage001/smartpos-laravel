@@ -53,6 +53,7 @@ module "compute" {
   db_username       = var.db_username
   db_password       = var.db_password
   git_repo_url      = var.git_repo_url
+  git_branch        = var.git_branch
 }
 
 module "storage" {

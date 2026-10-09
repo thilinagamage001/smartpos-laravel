@@ -50,3 +50,9 @@ variable "git_repo_url" {
   type        = string
   default     = "https://github.com/thilinagamage001/smartpos-laravel.git"
 }
+
+variable "git_branch" {
+  description = "Git branch for automated deployment"
+  type        = string
+  default     = "develop"
+}
