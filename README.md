@@ -22,53 +22,6 @@ SmartPOS follows a modern cloud-native, containerized architecture deployed on *
 <img width="1280" height="840" alt="architecture" src="https://github.com/user-attachments/assets/0b702222-9ce4-4e89-94c5-dc129c2144bf" />
 
 
-### Architecture Topology Breakdown
-
-```mermaid
-flowchart TD
-    subgraph Clients["Edge / Client Devices"]
-        CT["Cashier Terminal<br/>(Barcode Scanner & POS Screen)"]
-        ADM["Manager / Admin<br/>(Dashboard & Reports)"]
-    end
-
-    subgraph DevOps["CI/CD & Infrastructure as Code"]
-        DEV["Developer Push<br/>(main / develop)"] --> GHA["GitHub Actions CI<br/>(PHP 8.4, Node 22, Ephemeral PG, PHPUnit)"]
-        GHA -->|SSH Deploy Key| CD["Continuous Deployment<br/>(Zero-Downtime Container Pull)"]
-        TF["Terraform IaC<br/>(VPC, EC2, RDS, S3, Security Groups)"]
-    end
-
-    subgraph AWS["AWS Cloud (Region: ap-southeast-1)"]
-        S3["AWS S3 Bucket<br/>(Images, Invoices & Backups)"]
-
-        subgraph VPC["VPC (10.0.0.0/16)"]
-            IGW["Internet Gateway (IGW)<br/>0.0.0.0/0"]
-            
-            subgraph PublicSubnet["Public Subnet (10.0.1.0/24 - AZ-A)"]
-                subgraph EC2["AWS EC2 (Ubuntu 24.04 - t2/t3.micro)"]
-                    subgraph DockerCompose["Docker Compose Stack"]
-                        APP["App Container (smartpos-app:latest)<br/>• Nginx Reverse Proxy (:80)<br/>• PHP-FPM 8.4 (:9000)<br/>• Laravel 12 Framework"]
-                        WORKER["Worker Container (smartpos-worker)<br/>• php artisan queue:work<br/>• Asynchronous Job Processing"]
-                    end
-                end
-            end
-
-            subgraph PrivateSubnets["Private DB Subnet Group (10.0.10.0/24 & 10.0.11.0/24)"]
-                RDS[("AWS RDS PostgreSQL 16<br/>• Port 5432 (EC2 SG Access Only)<br/>• Air-gapped from Public Internet<br/>• Automated Daily Backups<br/>• AES-256 Encrypted GP2 Storage")]
-            end
-        end
-    end
-
-    CT -->|HTTP / HTTPS :80/:443| IGW
-    ADM -->|HTTP / HTTPS :80/:443| IGW
-    IGW --> APP
-    CD -.->|SSH :22| EC2
-    APP <-->|TCP :5432| RDS
-    WORKER <-->|Queue Jobs| RDS
-    APP -.->|IAM Instance Profile| S3
-```
-
-</details>
-
 ### Architectural Highlights
 
 1. **Client / Edge Tier**:
