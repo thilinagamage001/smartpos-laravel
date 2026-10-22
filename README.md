@@ -12,6 +12,10 @@
 
 ---
 
+<img width="1871" height="1079" alt="Screenshot From 2026-10-10 01-12-36" src="https://github.com/user-attachments/assets/ba04951a-cca7-414b-8594-c1598a65c115" />
+<img width="1871" height="1079" alt="Screenshot From 2026-10-10 01-12-17" src="https://github.com/user-attachments/assets/133f1788-020f-4d81-a2ca-03f752ed8c04" />
+
+
 ## 📐 System Architecture
 
 SmartPOS follows a modern cloud-native, containerized architecture deployed on **AWS (ap-southeast-1)** designed to operate reliably within the **AWS Free Tier** limits while enforcing production-grade security and isolation.
@@ -232,8 +236,11 @@ infra/
    - `ec2_public_ip`: Public IP address for the EC2 web server
    - `rds_endpoint`: Private DNS endpoint of PostgreSQL RDS
    - `s3_bucket_name`: Application object storage bucket
+ <img width="1913" height="1079" alt="Screenshot From 2026-10-10 01-13-42" src="https://github.com/user-attachments/assets/f2da52bf-f142-4b76-a380-5cea2bbbe183" />
 
 ---
+
+
 
 ## 🔄 CI/CD Deployment Workflow
 
