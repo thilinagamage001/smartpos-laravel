@@ -311,6 +311,11 @@ smartpos-laravel/
 
 ---
 
-## 🛡️ License
 
-This project is licensed under the [MIT License](LICENSE).
+## Author
+
+**Thilina Gamage**
+
+- GitHub: [@thilinagamage001](https://github.com/thilinagamage001)
+- LinkedIn: [thilinagamage001](https://linkedin.com/in/thilinagamage001)
+
