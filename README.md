@@ -1,4 +1,4 @@
-# 🛒 SmartPOS — Enterprise Point of Sale & Inventory Management System
+# 🛒 SmartPOS - Enterprise Point of Sale & Inventory Management System
 
 [![Laravel 12](https://img.shields.io/badge/Laravel-12.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
 [![PHP 8.4](https://img.shields.io/badge/PHP-8.4-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://www.php.net)
